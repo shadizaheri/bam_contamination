@@ -31,4 +31,8 @@ cat otherlines_"$out_prefix".txt fixed_rg_lines_"$out_prefix".txt > fixed_header
 # Apply the new header to the BAM file
 samtools reheader fixed_header_"$out_prefix".txt "$local_bam" > "${out_prefix}.bam"
 
+# Index the reheadered BAM file
+samtools index "${out_prefix}.bam"
+
 echo "Header has been modified and applied to new BAM file: ${out_prefix}.bam"
+echo "Indexed BAM file created: ${out_prefix}.bam.bai"
