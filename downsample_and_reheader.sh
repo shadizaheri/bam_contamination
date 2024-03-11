@@ -86,3 +86,4 @@ final_coverage_2=$(calculate_coverage "$output_dir/$output_bam_2")
 echo "Final coverage for $output_bam_2: $final_coverage_2"
 
 echo "Downsampling and coverage calculation complete. Files have been moved and indexed in $output_dir. Final coverages after downsampling: $final_coverage_1 (for $output_bam_1), $final_coverage_2 (for $output_bam_2)."
+
