@@ -78,4 +78,4 @@ cat otherlines_"$out_prefix".txt fixed_rg_lines_"$out_prefix".txt > fixed_header
 samtools reheader fixed_header_"$out_prefix".txt $output_contaminant_bam > "${out_prefix}.bam"
 samtools index "${out_prefix}.bam"
 
-echo "Header modification complete. New downsampled contaminant BAM file
+echo "Header modification complete. New downsampled contaminant BAM file"
