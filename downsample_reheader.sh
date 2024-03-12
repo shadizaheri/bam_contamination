@@ -46,6 +46,10 @@ original_coverage_main=$(calculate_coverage "$main_bam_file")
 original_coverage_contaminant=$(calculate_coverage "$contaminant_bam_file")
 
 echo "Original coverage - Main: $original_coverage_main, Contaminant: $original_coverage_contaminant"
+if [[ -z "$original_coverage_main" || -z "$original_coverage_contaminant" ]]; then
+    echo "Error: Could not calculate original coverages."
+    exit 1
+fi
 
 # Calculate downsampling percentages
 echo "Calculating downsampling percentages..."
