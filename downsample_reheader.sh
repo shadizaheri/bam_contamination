@@ -1,80 +1,70 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Starting the downsampling and reheadering script..."
-
 # Validate the number of arguments
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 [Desired Final Coverage] [Contaminant Proportion] [BAM File 1] [BAM File 2]"
+if [ "$#" -ne 5 ]; then
+    echo "Usage: $0 [Desired Final Coverage] [Contaminant Proportion] [Main BAM File] [Contaminant BAM File] [Main Sample Name]"
     exit 1
 fi
 
 # Assign variables from arguments
 desired_final_coverage="$1"
 contaminant_proportion="$2"
-bam_file_1="$3"
-bam_file_2="$4"
+main_bam_file="$3"
+contaminant_bam_file="$4"
+main_sample_name="$5"
 
-echo "Script parameters:"
-echo "Desired final coverage: $desired_final_coverage"
-echo "Contaminant proportion: $contaminant_proportion"
-echo "BAM File 1: $bam_file_1"
-echo "BAM File 2: $bam_file_2"
-
-# Function to be called when an error occurs
+# Define function for error handling
 error_handling() {
     echo "An error occurred. Exiting the script."
     exit 1
 }
 
-# Trap to call error_handling function on error
+# Set trap for error handling
 trap error_handling ERR
 
 # Function to calculate original coverage using mosdepth
 calculate_coverage() {
     local bam_file="$1"
     local prefix="${bam_file%.bam}"
-    echo "Calculating original coverage for $bam_file using mosdepth..."
     mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
-    # Extract mean coverage from mosdepth summary
     local mean_coverage=$(awk '{print $4}' "${prefix}.mosdepth.summary.txt")
-    echo "Original coverage for $bam_file: $mean_coverage"
     echo "$mean_coverage"
 }
 
 # Calculate original coverages for each BAM file
-echo "Calculating original coverages..."
-original_coverage_1=$(calculate_coverage "$bam_file_1")
-original_coverage_2=$(calculate_coverage "$bam_file_2")
+original_coverage_main=$(calculate_coverage "$main_bam_file")
+original_coverage_contaminant=$(calculate_coverage "$contaminant_bam_file")
 
 # Calculate downsampling percentages
-echo "Calculating downsampling percentages..."
-proportion_main_sample=$(echo "scale=2; 1 - $contaminant_proportion" | bc)
-downsample_percentage_1=$(echo "scale=2; $desired_final_coverage * $proportion_main_sample / $original_coverage_1" | bc)
-downsample_percentage_2=$(echo "scale=2; $desired_final_coverage * $contaminant_proportion / $original_coverage_2" | bc)
-echo "Downsampling percentage for BAM File 1: $downsample_percentage_1"
-echo "Downsampling percentage for BAM File 2: $downsample_percentage_2"
+downsample_percentage_main=$(echo "scale=2; $desired_final_coverage * (1 - $contaminant_proportion) / $original_coverage_main" | bc)
+downsample_percentage_contaminant=$(echo "scale=2; $desired_final_coverage * $contaminant_proportion / $original_coverage_contaminant" | bc)
 
-# Downsampling and indexing for the BAM files
-echo "Downsampling BAM files..."
-output_bam_1="${bam_file_1%.bam}_${downsample_percentage_1}_downsampled.bam"
-output_bam_2="${bam_file_2%.bam}_${downsample_percentage_2}_downsampled.bam"
+# Perform downsampling and indexing for the main BAM file
+output_main_bam="${main_bam_file%.bam}_${downsample_percentage_main}_downsampled.bam"
+echo "Downsampling $main_bam_file..."
+samtools view -b -s $downsample_percentage_main $main_bam_file > $output_main_bam
+samtools index $output_main_bam
 
-echo "Downsampling $bam_file_1 to $downsample_percentage_1..."
-samtools view -b -s $downsample_percentage_1 $bam_file_1 > $output_bam_1
-echo "$bam_file_1 downsampled to $downsample_percentage_1%."
-samtools index $output_bam_1
+# Perform downsampling and indexing for the contaminant BAM file
+output_contaminant_bam="${contaminant_bam_file%.bam}_${downsample_percentage_contaminant}_downsampled.bam"
+echo "Downsampling $contaminant_bam_file..."
+samtools view -b -s $downsample_percentage_contaminant $contaminant_bam_file > $output_contaminant_bam
+samtools index $output_contaminant_bam
 
-echo "Downsampling $bam_file_2 to $downsample_percentage_2..."
-samtools view -b -s $downsample_percentage_2 $bam_file_2 > $output_bam_2
-echo "$bam_file_2 downsampled to $downsample_percentage_2%."
-samtools index $output_bam_2
+# Modifying the header for the downsampled contaminant BAM file
+out_prefix="${main_sample_name}_${contaminant_proportion}_reheadered"
+echo "Modifying header for $output_contaminant_bam..."
+samtools view --no-PG -H $output_contaminant_bam > header_"$out_prefix".txt
+grep "^@RG" header_"$out_prefix".txt > rg_lines_"$out_prefix".txt
+if ! grep -qF "SM:" rg_lines_"$out_prefix".txt; then
+    sed -i "s/$/SM:tbd/" rg_lines_"$out_prefix".txt
+fi
+awk -v sm="$main_sample_name" -F '\t' 'BEGIN {OFS="\t"} { for (i=1; i<=NF; ++i) { if ($i ~ /^SM:/) $i="SM:"sm } print }' rg_lines_"$out_prefix".txt > fixed_rg_lines_"$out_prefix".txt
+grep -v "^@RG" header_"$out_prefix".txt > otherlines_"$out_prefix".txt
+cat otherlines_"$out_prefix".txt fixed_rg_lines_"$out_prefix".txt > fixed_header_"$out_prefix".txt
+samtools reheader fixed_header_"$out_prefix".txt $output_contaminant_bam > "${out_prefix}.bam"
+samtools index "${out_prefix}.bam"
 
-# Additional checks for final downsampled BAM files
-echo "Calculating final coverage for downsampled BAM files..."
-final_coverage_1=$(calculate_coverage "$output_bam_1")
-final_coverage_2=$(calculate_coverage "$output_bam_2")
-echo "Final coverage for $output_bam_1: $final_coverage_1"
-echo "Final coverage for $output_bam_2: $final_coverage_2"
-
-echo "Downsampling and coverage calculation complete. Final coverages after downsampling: $final_coverage_1 (for $output_bam_1), $final_coverage_2 (for $output_bam_2)."
+echo "Header has been modified and applied to new downsampled contaminant BAM file: ${out_prefix}.bam"
+echo "Indexed downsampled BAM file created: ${out_prefix}.bam.bai"
