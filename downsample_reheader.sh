@@ -32,7 +32,7 @@ calculate_coverage() {
     local bam_file="$1"
     local prefix="${bam_file%.bam}"
     echo "Calculating coverage for $bam_file..."
-    mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
+    ./mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
     local mean_coverage=$(awk '{print $4}' "${prefix}.mosdepth.summary.txt")
     echo "Original coverage for $bam_file is $mean_coverage"
     echo "$mean_coverage"
