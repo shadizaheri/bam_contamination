@@ -30,14 +30,16 @@ trap error_handling ERR
 # Function to calculate original coverage using mosdepth
 calculate_coverage() {
     local bam_file="$1"
-    local prefix="${bam_file%.bam}"
+    local prefix="${bam_file%.bam}"  # Removes the .bam extension to match your mosdepth output prefix
     echo "Calculating coverage for $bam_file..."
+    # Note: Remove './' if mosdepth is globally installed or ensure the correct path if locally installed
     ./mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
     # Extract the mean coverage value from the generated summary file
     local mean_coverage=$(awk '/mean/{print $3}' "${prefix}.mosdepth.summary.txt")
     echo "Original coverage for $bam_file is $mean_coverage"
-    echo "$mean_coverage"  # This echoes the mean coverage value
+    echo "$mean_coverage"  # This will echo the mean coverage value
 }
+
 
 
 
