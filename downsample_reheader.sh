@@ -31,12 +31,12 @@ trap error_handling ERR
 calculate_coverage() {
     local bam_file="$1"
     local prefix="${bam_file%.bam}"
-    echo "Calculating coverage for $bam_file..."
+    echo "Calculating coverage for $bam_file..." >&2  # Print to standard error instead
     ./mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
     # Extract the mean coverage value from the line starting with 'total'
     local mean_coverage=$(awk '$1 == "total" {print $4}' "${prefix}.mosdepth.summary.txt")
-    echo "Original coverage for $bam_file is $mean_coverage"
-    echo "$mean_coverage"  # This echoes the mean coverage value, which should be a single number
+    echo >&2 "Original coverage for $bam_file is $mean_coverage"  # Again, print to standard error
+    echo "$mean_coverage"  # Ensure this is the last line in the function to output only the mean coverage value
 }
 
 
