@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -euxo pipefail
 
 echo "Script initiated: Downsampling and Reheadering BAM Files"
 
@@ -57,6 +57,7 @@ fi
 echo "Calculating downsampling percentages..."
 downsample_percentage_main=$(echo "scale=2; $desired_final_coverage * (1 - $contaminant_proportion) / $original_coverage_main" | bc)
 downsample_percentage_contaminant=$(echo "scale=2; $desired_final_coverage * $contaminant_proportion / $original_coverage_contaminant" | bc)
+
 
 echo "Downsampling percentages - Main: $downsample_percentage_main, Contaminant: $downsample_percentage_contaminant"
 
