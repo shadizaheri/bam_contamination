@@ -102,5 +102,6 @@ workflow ContaminationWorkflow {
     File downsampled_contaminant_bam = DownsampleAndReheader.output_contaminant_bam
     File reheadered_bam = DownsampleAndReheader.reheadered_contaminant_bam
     File merged_b = MergeBams.merged_bam
+    File merged_bam_index = MergeBams.merged_bam_index
   }
 }
