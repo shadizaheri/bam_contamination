@@ -22,7 +22,7 @@ task DownsampleAndReheader {
     set -euo pipefail
     
     # Run the downsampling and reheadering script with specified inputs
-    downsample.sh "~{desired_final_coverage}" "~{contaminant_proportion}" "~{main_bam_file}" "~{contaminant_bam_file}" "~{main_sample_name}"
+    downsample_reheader.sh "~{desired_final_coverage}" "~{contaminant_proportion}" "~{main_bam_file}" "~{contaminant_bam_file}" "~{main_sample_name}"
   >>>
 
   # Define runtime resources needed
