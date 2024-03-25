@@ -56,13 +56,15 @@ downsample_percentage_contaminant=$(echo "scale=6; $desired_final_coverage * $co
 echo "Downsampling percentages - Main: $downsample_percentage_main, Contaminant: $downsample_percentage_contaminant"
 
 # Perform downsampling and indexing for the main BAM file
-output_main_bam="${main_bam_file%.bam}_${downsample_percentage_main}_downsampled.bam"
+# Modification: Use desired_final_coverage in the file name instead of downsample_percentage_main
+output_main_bam="${main_bam_file%.bam}_${desired_final_coverage}_downsampled.bam"
 echo "Downsampling $main_bam_file to $downsample_percentage_main..."
 samtools view -b -s $downsample_percentage_main $main_bam_file > $output_main_bam
 samtools index $output_main_bam
 echo "Recalculating coverage for $output_main_bam..."
 new_coverage_main=$(calculate_coverage "$output_main_bam")
 echo "New coverage for $output_main_bam is $new_coverage_main"
+
 
 # Perform downsampling and indexing for the contaminant BAM file
 # Modification: Use contaminant_proportion in the file name instead of downsample_percentage_contaminant
