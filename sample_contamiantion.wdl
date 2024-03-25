@@ -11,7 +11,7 @@ task DownsampleAndReheader {
     File contaminant_bam_file
     File contaminant_bam_index  # Adding input for the index of the contaminant BAM file
     String main_sample_name
-    String docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3222024"
+    String docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3252024"
     String? disk_space  # Optional input for disk space
     Int? cpu    # CPU is now an optional input
     String? memory  # Memory is now an optional input
@@ -50,7 +50,7 @@ task MergeBams {
     File main_bam                        # Main downsampled BAM file
     File contaminant_bam                 # Reheadered downsampled contaminant BAM file
     String output_filename               # Filename for the merged output BAM
-    String docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3222024"  # Docker image with samtools
+    String docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3252024"  # Docker image with samtools
     String? disk_space                   # Optional input for disk space
     Int? cpu                             # CPU is now an optional input
     String? memory                       # Memory is now an optional input
@@ -106,7 +106,7 @@ workflow ContaminationWorkflow {
       contaminant_bam_file = contaminant_bam_file,
       contaminant_bam_index = contaminant_bam_index,  # Pass the contaminant BAM index
       main_sample_name = main_sample_name,
-      docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3222024",
+      docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3252024",
       disk_space = disk_space,
       cpu = cpu,  # Set CPU to 4
       memory = memory  # Set memory to 8 GB
@@ -118,7 +118,7 @@ workflow ContaminationWorkflow {
       main_bam = DownsampleAndReheader.output_main_bam,
       contaminant_bam = DownsampleAndReheader.reheadered_contaminant_bam,
       output_filename = merged_output_filename,
-      docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3222024"
+      docker_image = "us.gcr.io/broad-dsp-lrma/mosdepth:sz_v3252024"
   }
 
   # Define the outputs of the entire workflow
