@@ -31,19 +31,14 @@ trap error_handling ERR
 calculate_coverage() {
     local bam_file="$1"
     local prefix="${bam_file%.bam}"
-    echo "Calculating coverage for $bam_file..." >&2  # Print to standard error instead
-    ./mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
-    # Extract the mean coverage value from the line starting with 'total'
+    echo "Calculating coverage for $bam_file..." >&2
+    mosdepth -t 2 -n -x -Q 1 "${prefix}" "$bam_file"
     local mean_coverage=$(awk '$1 == "total" {print $4}' "${prefix}.mosdepth.summary.txt")
-    echo >&2 "Original coverage for $bam_file is $mean_coverage"  # Again, print to standard error
-    echo "$mean_coverage"  # Ensure this is the last line in the function to output only the mean coverage value
+    echo >&2 "Original coverage for $bam_file is $mean_coverage"
+    echo "$mean_coverage"
 }
 
-
-
-
 echo "Calculating original coverages..."
-# Calculate original coverages for each BAM file
 original_coverage_main=$(calculate_coverage "$main_bam_file")
 original_coverage_contaminant=$(calculate_coverage "$contaminant_bam_file")
 
@@ -58,7 +53,6 @@ echo "Calculating downsampling percentages..."
 downsample_percentage_main=$(echo "scale=6; $desired_final_coverage * (1 - $contaminant_proportion) / $original_coverage_main" | bc)
 downsample_percentage_contaminant=$(echo "scale=6; $desired_final_coverage * $contaminant_proportion / $original_coverage_contaminant" | bc)
 
-
 echo "Downsampling percentages - Main: $downsample_percentage_main, Contaminant: $downsample_percentage_contaminant"
 
 # Perform downsampling and indexing for the main BAM file
@@ -71,7 +65,8 @@ new_coverage_main=$(calculate_coverage "$output_main_bam")
 echo "New coverage for $output_main_bam is $new_coverage_main"
 
 # Perform downsampling and indexing for the contaminant BAM file
-output_contaminant_bam="${contaminant_bam_file%.bam}_${downsample_percentage_contaminant}_downsampled.bam"
+# Modification: Use contaminant_proportion in the file name instead of downsample_percentage_contaminant
+output_contaminant_bam="${contaminant_bam_file%.bam}_${contaminant_proportion}_downsampled.bam"
 echo "Downsampling $contaminant_bam_file to $downsample_percentage_contaminant..."
 samtools view -b -s $downsample_percentage_contaminant $contaminant_bam_file > $output_contaminant_bam
 samtools index $output_contaminant_bam
@@ -87,10 +82,21 @@ grep "^@RG" header_"$out_prefix".txt > rg_lines_"$out_prefix".txt
 if ! grep -qF "SM:" rg_lines_"$out_prefix".txt; then
     sed -i "s/$/SM:tbd/" rg_lines_"$out_prefix".txt
 fi
+
+# Use awk to replace the sample name with the main sample name
 awk -v sm="$main_sample_name" -F '\t' 'BEGIN {OFS="\t"} { for (i=1; i<=NF; ++i) { if ($i ~ /^SM:/) $i="SM:"sm } print }' rg_lines_"$out_prefix".txt > fixed_rg_lines_"$out_prefix".txt
 grep -v "^@RG" header_"$out_prefix".txt > otherlines_"$out_prefix".txt
 cat otherlines_"$out_prefix".txt fixed_rg_lines_"$out_prefix".txt > fixed_header_"$out_prefix".txt
 samtools reheader fixed_header_"$out_prefix".txt $output_contaminant_bam > "${out_prefix}.bam"
 samtools index "${out_prefix}.bam"
 
-echo "Header modification complete. New downsampled contaminant BAM file"
+# Report final output names for clarity
+echo "Final output files:"
+echo "Main BAM: $output_main_bam"
+echo "Main BAM Index: ${output_main_bam}.bai"
+echo "Contaminant BAM: $output_contaminant_bam"
+echo "Contaminant BAM Index: ${output_contaminant_bam}.bai"
+echo "Reheadered Contaminant BAM: ${out_prefix}.bam"
+echo "Reheadered Contaminant BAM Index: ${out_prefix}.bam.bai"
+
+echo "Downsampling and reheadering process completed successfully."
