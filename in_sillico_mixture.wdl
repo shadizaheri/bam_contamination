@@ -26,14 +26,14 @@ set -euxo pipefail
 
 # Combined Script: Downsampling, Reheadering, and Merging BAM Files
 # Assign input variables for clarity and direct use
-desired_final_coverage=${desired_final_coverage}
-contaminant_proportion=${contaminant_proportion}
-main_bam_file=${main_bam_file}
-main_bam_index=${main_bam_index}
-contaminant_bam_file=${contaminant_bam_file}
-contaminant_bam_index=${contaminant_bam_index}
-main_sample_name=${main_sample_name}
-merged_bam=${merged_output_filename}
+#esired_final_coverage=${desired_final_coverage}
+#contaminant_proportion=${contaminant_proportion}
+#main_bam_file=${main_bam_file}
+#main_bam_index=${main_bam_index}
+#contaminant_bam_file=${contaminant_bam_file}
+#contaminant_bam_index=${contaminant_bam_index}
+#main_sample_name=${main_sample_name}
+#merged_bam=${merged_output_filename}
 
 # commnad to run the script
 # ./downsample_merge.sh desired_final_coverage contaminant_proportion main_bam_file contaminant_bam_file main_sample_name merged_bam
