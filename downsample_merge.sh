@@ -16,7 +16,8 @@ main_bam_file="$3"
 contaminant_bam_file="$4"
 main_sample_name="$5"
 merged_bam="$6"
-
+# commnad to run the script
+# ./downsample_merge.sh desired_final_coverage contaminant_proportion main_bam_file contaminant_bam_file main_sample_name merged_bam
 echo "Parameters: Desired Coverage=$desired_final_coverage, Contaminant Proportion=$contaminant_proportion, Main BAM=$main_bam_file, Contaminant BAM=$contaminant_bam_file, Main Sample Name=$main_sample_name"
 
 # Define function for error handling
@@ -82,6 +83,7 @@ out_prefix="${main_sample_name}_${contaminant_proportion}_reheadered"
 echo "Modifying header for $output_contaminant_bam..."
 samtools view --no-PG -H $output_contaminant_bam > header_"$out_prefix".txt
 grep "^@RG" header_"$out_prefix".txt > rg_lines_"$out_prefix".txt
+
 if ! grep -qF "SM:" rg_lines_"$out_prefix".txt; then
     sed -i "s/$/SM:tbd/" rg_lines_"$out_prefix".txt
 fi
