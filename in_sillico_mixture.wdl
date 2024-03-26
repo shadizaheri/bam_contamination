@@ -35,12 +35,6 @@ contaminant_bam_index=${contaminant_bam_index}
 main_sample_name=${main_sample_name}
 merged_bam=${merged_output_filename}
 
-# Validate the number of arguments for downsampling, reheadering, and merging
-if [ "$#" -ne 6 ]; then
-    echo "Usage: $0 [Desired Final Coverage] [Contaminant Proportion] [Main BAM File] [Contaminant BAM File] [Main Sample Name] [Merged BAM Output]"
-    exit 1
-fi
-
 # commnad to run the script
 # ./downsample_merge.sh desired_final_coverage contaminant_proportion main_bam_file contaminant_bam_file main_sample_name merged_bam
 echo "Parameters: Desired Coverage=$desired_final_coverage, Contaminant Proportion=$contaminant_proportion, Main BAM=$main_bam_file, Contaminant BAM=$contaminant_bam_file, Main Sample Name=$main_sample_name"
