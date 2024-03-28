@@ -1,4 +1,5 @@
 #!/bin/bash
+# Author: Shadi Zaheri (szaheri@broadinstitute.org)
 set -euxo pipefail
 
 echo "Script initiated: Downsampling and Reheadering BAM Files"
