@@ -1,4 +1,6 @@
 #!/bin/bash
+# Author: Shadi Zaheri (szaheri@broadinstitute.org)
+
 set -eu
 
 # Check if there are enough arguments
